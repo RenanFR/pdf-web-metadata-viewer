@@ -1,7 +1,6 @@
 package com.onespan.pdf.web.metadata.viewer.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,8 +16,7 @@ public class PDFMetadataController {
 	}
 
 	@GetMapping("/pdf")
-	public String pdfUploadPage(Model model) {
-		model.addAttribute("pdfFileInput", new PDFFileInput());
+	public String pdfUploadPage() {
 		return "home/pdf";
 	}
 
