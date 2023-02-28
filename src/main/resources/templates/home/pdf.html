@@ -23,80 +23,82 @@
 		</form>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_version" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.version}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_version" type="text"
 						th:placeholder="#{home.pdf.info.version.placeholder}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_validity" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.validity}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_validity" type="text"
 						th:placeholder="#{home.pdf.info.validity.placeholder}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_ada" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.ada}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_ada" type="text"
 						th:placeholder="#{home.pdf.info.ada.placeholder}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_fonts" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.fonts}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_fonts" type="text"
 						th:placeholder="#{home.pdf.info.fonts.placeholder}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_restrictions" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.restrictions}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
-						th:placeholder="#{home.pdf.info.restrictions.placeholder}" readonly>
+					<input class="form-control" id="pdf_restrictions" type="text"
+						th:placeholder="#{home.pdf.info.restrictions.placeholder}"
+						readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_pages" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.pages}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
-						th:placeholder="#{home.pdf.info.pages.placeholder}" readonly>
+					<input class="form-control" id="pdf_pages" type="text"
+						th:placeholder="#{home.pdf.info.pages.placeholder}"
+						th:value="${pdfPages}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_size" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.size}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_size" type="text"
 						th:placeholder="#{home.pdf.info.size.placeholder}" readonly>
 				</div>
 			</div>
 		</div>
 		<div class="form-group row mt-3">
 			<div class="col">
-				<label for="pdf_file" class="form-label col-sm-2"><th:block
+				<label for="pdf_language" class="form-label col-sm-2"><th:block
 						th:text="#{home.pdf.info.language}"></th:block></label>
 				<div class="col-sm-10">
-					<input class="form-control" type="text"
+					<input class="form-control" id="pdf_language" type="text"
 						th:placeholder="#{home.pdf.info.language.placeholder}" readonly>
 				</div>
 			</div>
