@@ -1,14 +1,32 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layout}">
-    <head>
-        <title th:text="#{home.pdf.title}" />
-    </head>
-    <body>
-        <div layout:fragment="content">
-            <h1 th:text="#{home.index.headline}" class="mb-4" />
-            <p th:utext="#{home.index.text}" />
-            <p th:utext="#{home.index.swagger}" class="mb-5" />
-        </div>
-    </body>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout}">
+<head>
+<title th:text="#{home.pdf.title}" />
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="row">
+			<div class="col">
+				<label for="formFile" class="form-label"><th:block
+						th:text="#{home.pdf.input.label}"></th:block></label>
+				<form action="#" th:action="@{/pdf}" method="post"
+					enctype="multipart/form-data" id=pdf_form>
+					<div class="row">
+						<div class="col-md-8">
+							<input class="form-control" type="file" id="pdf_file"
+								name="pdfFile">
+						</div>
+						<div class="col-md-4">
+							<button type="submit" form="pdf_form" class="btn btn-info">
+								<th:block th:text="#{home.pdf.btn.text}"></th:block>
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
 </html>
