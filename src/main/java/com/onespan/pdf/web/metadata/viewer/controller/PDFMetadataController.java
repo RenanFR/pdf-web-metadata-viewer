@@ -5,11 +5,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @Controller
-public class HomeController {
-
+public class PDFMetadataController {
+	
     @GetMapping("/")
     public String index() {
         return "home/index";
+    }
+    
+    @GetMapping("/pdf")
+    public String pdf() {
+    	return "home/pdf";
     }
 
 }
