@@ -1,14 +1,14 @@
 package com.onespan.pdf.web.metadata.viewer.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import org.apache.tika.language.detect.LanguageDetector;
+import org.apache.tika.language.detect.LanguageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,11 +20,12 @@ import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFNet;
 import com.pdftron.pdf.Page;
 import com.pdftron.pdf.PageIterator;
+import com.pdftron.sdf.SecurityHandler;
 
 @Service
-public class PDFApryseService implements AutoCloseable {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(PDFApryseService.class);
+public class PDFService implements AutoCloseable {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(PDFService.class);
 
 	private PDFDoc doc;
 
@@ -41,6 +42,13 @@ public class PDFApryseService implements AutoCloseable {
 		return doc.getPage(1).getResourceDict().getDoc().getHeader();
 	}
 
+	public String getSecurity() throws Exception {
+		doc.initSecurityHandler();
+		boolean printPermission = doc.getSecurityHandler().getPermission(SecurityHandler.e_print);
+		return null;
+
+	}
+
 	public boolean isAdaCompliant() throws Exception {
 		return doc.isTagged() && hasAllRequiredMetadata();
 	}
@@ -50,8 +58,36 @@ public class PDFApryseService implements AutoCloseable {
 		return pdfHeader != null && !pdfHeader.isBlank();
 	}
 
+	public String getDocumentLanguage() throws Exception {
+		StringBuilder documentText = new StringBuilder();
+		iterateDocumentTextAndDo(el -> {
+			try {
+				documentText.append(el.getTextString());
+			} catch (PDFNetException e) {
+				LOGGER.error(e.getMessage());
+			}
+		});
+		LanguageResult detectLanguageResult = LanguageDetector.getDefaultLanguageDetector().loadModels()
+				.detect(documentText.toString());
+
+		return detectLanguageResult.getLanguage();
+	}
+
 	public Set<String> getFontList() throws Exception {
 		Set<String> fontList = new HashSet<String>();
+		iterateDocumentTextAndDo(el -> {
+			try {
+				fontList.add(el.getGState().getFont().getFamilyName());
+			} catch (PDFNetException e) {
+				LOGGER.error(e.getMessage());
+			}
+		});
+		return fontList;
+
+	}
+
+	private void iterateDocumentTextAndDo(Consumer<Element> doWithText) throws PDFNetException {
+
 		List<Page> pageList = new ArrayList<Page>();
 		PageIterator pageIterator = doc.getPageIterator();
 		ElementReader reader = new ElementReader();
@@ -66,13 +102,12 @@ public class PDFApryseService implements AutoCloseable {
 			while (Optional.ofNullable((element = reader.next())).isPresent()) {
 				if (element.getType() == Element.e_text) {
 					LOGGER.info(element.getTextString());
-					fontList.add(element.getGState().getFont().getFamilyName());
+					doWithText.accept(element);
+
 				}
 			}
 			reader.end();
 		}
-		return fontList;
-
 	}
 
 	private boolean hasAllRequiredMetadata() throws Exception {
@@ -82,20 +117,20 @@ public class PDFApryseService implements AutoCloseable {
 
 	}
 
-	public PDFApryseService() {
+	public PDFService() {
 	}
 
-	private PDFApryseService(InputStream fileInputStream) {
+	private PDFService(String filePath) {
 		PDFNet.initialize(System.getenv("PDF_APRYSE_KEY"));
 		try {
-			doc = new PDFDoc(fileInputStream);
-		} catch (IOException | PDFNetException exception) {
+			doc = new PDFDoc(filePath);
+		} catch (PDFNetException exception) {
 			System.err.println(exception.getMessage());
 		}
 	}
 
-	public static PDFApryseService initialize(InputStream fileInputStream) {
-		return new PDFApryseService(fileInputStream);
+	public static PDFService initialize(String filePath) {
+		return new PDFService(filePath);
 
 	}
 
