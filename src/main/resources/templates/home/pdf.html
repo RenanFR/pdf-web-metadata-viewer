@@ -27,7 +27,8 @@
 						th:text="#{home.pdf.info.version}"></th:block></label>
 				<div class="col-sm-10">
 					<input class="form-control" id="pdf_version" type="text"
-						th:placeholder="#{home.pdf.info.version.placeholder}" readonly>
+						th:placeholder="#{home.pdf.info.version.placeholder}"
+						th:value="${pdfVersion}" readonly>
 				</div>
 			</div>
 		</div>
@@ -47,7 +48,8 @@
 						th:text="#{home.pdf.info.ada}"></th:block></label>
 				<div class="col-sm-10">
 					<input class="form-control" id="pdf_ada" type="text"
-						th:placeholder="#{home.pdf.info.ada.placeholder}" readonly>
+						th:placeholder="#{home.pdf.info.ada.placeholder}"
+						th:value="${pdfAda}" readonly>
 				</div>
 			</div>
 		</div>
@@ -89,7 +91,8 @@
 						th:text="#{home.pdf.info.size}"></th:block></label>
 				<div class="col-sm-10">
 					<input class="form-control" id="pdf_size" type="text"
-						th:placeholder="#{home.pdf.info.size.placeholder}" readonly>
+						th:placeholder="#{home.pdf.info.size.placeholder}"
+						th:value="${pdfSize}" readonly>
 				</div>
 			</div>
 		</div>

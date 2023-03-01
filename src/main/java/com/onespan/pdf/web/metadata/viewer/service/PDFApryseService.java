@@ -15,7 +15,23 @@ public class PDFApryseService implements AutoCloseable {
 	private PDFDoc doc;
 
 	public long getPages() throws Exception {
+
 		return doc.getPageCount();
+	}
+
+	public String getPDFVersion() throws Exception {
+		return doc.getPage(1).getResourceDict().getDoc().getHeader().split("-")[1];
+	}
+
+	public boolean isAdaCompliant() throws Exception {
+		return doc.isTagged() && hasAllRequiredMetadata();
+	}
+
+	private boolean hasAllRequiredMetadata() throws Exception {
+		return !doc.getDocInfo().getAuthor().isBlank() && !doc.getDocInfo().getKeywords().isBlank()
+				&& !doc.getDocInfo().getTitle().isBlank() && !doc.getDocInfo().getKeywords().isBlank()
+				&& !doc.getDocInfo().getSubject().isBlank();
+
 	}
 
 	public PDFApryseService() {
