@@ -2,15 +2,29 @@ package com.onespan.pdf.web.metadata.viewer.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.pdftron.common.PDFNetException;
+import com.pdftron.pdf.Element;
+import com.pdftron.pdf.ElementReader;
 import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFNet;
+import com.pdftron.pdf.Page;
+import com.pdftron.pdf.PageIterator;
 
 @Service
 public class PDFApryseService implements AutoCloseable {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(PDFApryseService.class);
 
 	private PDFDoc doc;
 
@@ -34,6 +48,31 @@ public class PDFApryseService implements AutoCloseable {
 	public boolean isValid() throws Exception {
 		String pdfHeader = getPDFHeader();
 		return pdfHeader != null && !pdfHeader.isBlank();
+	}
+
+	public Set<String> getFontList() throws Exception {
+		Set<String> fontList = new HashSet<String>();
+		List<Page> pageList = new ArrayList<Page>();
+		PageIterator pageIterator = doc.getPageIterator();
+		ElementReader reader = new ElementReader();
+		while (pageIterator.hasNext()) {
+			Page page = pageIterator.next();
+			pageList.add(page);
+		}
+		for (Page page : pageList) {
+
+			reader.begin(page);
+			Element element;
+			while (Optional.ofNullable((element = reader.next())).isPresent()) {
+				if (element.getType() == Element.e_text) {
+					LOGGER.info(element.getTextString());
+					fontList.add(element.getGState().getFont().getFamilyName());
+				}
+			}
+			reader.end();
+		}
+		return fontList;
+
 	}
 
 	private boolean hasAllRequiredMetadata() throws Exception {

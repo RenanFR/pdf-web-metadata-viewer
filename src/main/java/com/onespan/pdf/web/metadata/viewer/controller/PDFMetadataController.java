@@ -1,6 +1,7 @@
 package com.onespan.pdf.web.metadata.viewer.controller;
 
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.apache.el.parser.AstFalse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +37,21 @@ public class PDFMetadataController {
 		Locale locale = lang != null ? new Locale(lang) : Locale.US;
 		String messageYes = messageSource.getMessage("home.pdf.info.y", null, locale);
 		String messageNo = messageSource.getMessage("home.pdf.info.n", null, locale);
-		
+
 		redirectAttributes.addFlashAttribute("MSG_SUCCESS", pdfFile.getOriginalFilename());
-		
+
 		PDFApryseService pdfService = PDFApryseService.initialize(pdfFile.getInputStream());
-		
+
 		redirectAttributes.addFlashAttribute("pdfValidity", pdfService.isValid() ? messageYes : messageNo);
 		redirectAttributes.addFlashAttribute("pdfPages", pdfService.getPages());
 		redirectAttributes.addFlashAttribute("pdfSize", pdfFile.getSize() + " Bytes");
 		redirectAttributes.addFlashAttribute("pdfVersion", pdfService.getPDFVersion());
 		redirectAttributes.addFlashAttribute("pdfAda", pdfService.isAdaCompliant() ? messageYes : messageNo);
-		
+
+		String pdfFonts = pdfService.getFontList().stream().collect(Collectors.joining(", ", "(", ")"));
+
+		redirectAttributes.addFlashAttribute("pdfFonts", pdfFonts);
+
 		return "redirect:/pdf";
 	}
 
