@@ -41,6 +41,8 @@ public class PDFMetadataController {
 		Locale locale = lang != null ? new Locale(lang) : Locale.US;
 		String messageYes = messageSource.getMessage("home.pdf.info.y", null, locale);
 		String messageNo = messageSource.getMessage("home.pdf.info.n", null, locale);
+		String messageAllowed = messageSource.getMessage("home.pdf.info.allowed", null, locale);
+		String messageNotAllowed = messageSource.getMessage("home.pdf.info.not_allowed", null, locale);
 
 		redirectAttributes.addFlashAttribute("MSG_SUCCESS", pdfFile.getOriginalFilename());
 
@@ -51,7 +53,18 @@ public class PDFMetadataController {
 		redirectAttributes.addFlashAttribute("pdfSize", pdfFile.getSize() + " Bytes");
 		redirectAttributes.addFlashAttribute("pdfVersion", pdfService.getPDFVersion());
 		redirectAttributes.addFlashAttribute("pdfAda", pdfService.isAdaCompliant() ? messageYes : messageNo);
-		redirectAttributes.addFlashAttribute("pdfRestrictions", pdfService.getSecurity());
+
+		boolean[] documentRestriction = pdfService.getDocumentRestrictionSummary(tmpFile.getAbsolutePath());
+		StringBuilder documentRestrictionSummary = new StringBuilder();
+		documentRestrictionSummary.append(messageSource.getMessage("home.pdf.info.restrictions.print", null, locale)
+				+ ": " + (documentRestriction[0] ? messageAllowed : messageNotAllowed) + ", ");
+		documentRestrictionSummary.append(messageSource.getMessage("home.pdf.info.restrictions.copy", null, locale)
+				+ ": " + (documentRestriction[1] ? messageAllowed : messageNotAllowed) + ", ");
+		documentRestrictionSummary
+				.append(messageSource.getMessage("home.pdf.info.restrictions.modification", null, locale) + ": "
+						+ (documentRestriction[2] ? messageAllowed : messageNotAllowed));
+
+		redirectAttributes.addFlashAttribute("pdfRestrictions", documentRestrictionSummary.toString());
 
 		String pdfFonts = pdfService.getFontList().stream().collect(Collectors.joining(", ", "(", ")"));
 

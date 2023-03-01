@@ -1,8 +1,11 @@
 package com.onespan.pdf.web.metadata.viewer.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -13,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.itextpdf.text.pdf.PdfEncryptor;
+import com.itextpdf.text.pdf.PdfReader;
 import com.pdftron.common.PDFNetException;
 import com.pdftron.pdf.Element;
 import com.pdftron.pdf.ElementReader;
@@ -20,7 +25,6 @@ import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFNet;
 import com.pdftron.pdf.Page;
 import com.pdftron.pdf.PageIterator;
-import com.pdftron.sdf.SecurityHandler;
 
 @Service
 public class PDFService implements AutoCloseable {
@@ -42,11 +46,19 @@ public class PDFService implements AutoCloseable {
 		return doc.getPage(1).getResourceDict().getDoc().getHeader();
 	}
 
-	public String getSecurity() throws Exception {
-		doc.initSecurityHandler();
-		boolean printPermission = doc.getSecurityHandler().getPermission(SecurityHandler.e_print);
-		return null;
+	public boolean[] getDocumentRestrictionSummary(String filePath) throws Exception {
+		PdfReader pdfReader = new PdfReader(filePath);
 
+		if (pdfReader.isEncrypted()) {
+
+			int permissions = (int) pdfReader.getPermissions();
+			return new boolean[] { PdfEncryptor.isPrintingAllowed(permissions),
+					PdfEncryptor.isCopyAllowed(permissions),
+					PdfEncryptor.isModifyContentsAllowed(permissions) };
+		} else {
+			return new boolean[] { true, true, true };
+
+		}
 	}
 
 	public boolean isAdaCompliant() throws Exception {
