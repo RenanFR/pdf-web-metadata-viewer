@@ -33,15 +33,20 @@ public class PDFMetadataController {
 	@PostMapping("/pdf")
 	public String receiveAndAnalysePdf(@RequestParam MultipartFile pdfFile, RedirectAttributes redirectAttributes,
 			@RequestParam(required = false) String lang) throws Exception {
+		Locale locale = lang != null ? new Locale(lang) : Locale.US;
+		String messageYes = messageSource.getMessage("home.pdf.info.y", null, locale);
+		String messageNo = messageSource.getMessage("home.pdf.info.n", null, locale);
+		
 		redirectAttributes.addFlashAttribute("MSG_SUCCESS", pdfFile.getOriginalFilename());
+		
 		PDFApryseService pdfService = PDFApryseService.initialize(pdfFile.getInputStream());
+		
+		redirectAttributes.addFlashAttribute("pdfValidity", pdfService.isValid() ? messageYes : messageNo);
 		redirectAttributes.addFlashAttribute("pdfPages", pdfService.getPages());
 		redirectAttributes.addFlashAttribute("pdfSize", pdfFile.getSize() + " Bytes");
 		redirectAttributes.addFlashAttribute("pdfVersion", pdfService.getPDFVersion());
-		Locale locale = lang != null ? new Locale(lang) : Locale.US;
-		redirectAttributes.addFlashAttribute("pdfAda",
-				pdfService.isAdaCompliant() ? messageSource.getMessage("home.pdf.info.ada.y", null, locale)
-						: messageSource.getMessage("home.pdf.info.ada.n", null, locale));
+		redirectAttributes.addFlashAttribute("pdfAda", pdfService.isAdaCompliant() ? messageYes : messageNo);
+		
 		return "redirect:/pdf";
 	}
 
