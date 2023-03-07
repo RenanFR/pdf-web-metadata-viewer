@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
@@ -22,8 +20,6 @@ import com.onespan.pdf.web.metadata.viewer.util.DocumentLanguageDetector;
 
 @Controller
 public class PDFMetadataController {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(PDFMetadataController.class);
 
 	private static final String MODIFY = "home.pdf.info.restrictions.modification";
 	private static final String COPY = "home.pdf.info.restrictions.copy";

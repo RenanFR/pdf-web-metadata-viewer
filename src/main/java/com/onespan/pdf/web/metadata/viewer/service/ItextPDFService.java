@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.itextpdf.text.pdf.PdfDictionary;
+import com.itextpdf.text.pdf.PdfDocument;
 import com.itextpdf.text.pdf.PdfEncryptor;
 import com.itextpdf.text.pdf.PdfName;
 import com.itextpdf.text.pdf.PdfObject;
@@ -66,7 +67,6 @@ public class ItextPDFService implements AutoCloseable, PDFService {
 
 	@Override
 	public boolean isAdaCompliant() throws Exception {
-		pdfReader.getInfo();
 		return pdfReader.isTagged();
 	}
 

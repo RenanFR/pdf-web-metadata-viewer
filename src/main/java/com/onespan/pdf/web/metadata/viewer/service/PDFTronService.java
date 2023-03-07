@@ -91,8 +91,7 @@ public class PDFTronService implements AutoCloseable, PDFService {
 
 	private boolean hasAllRequiredMetadata() throws Exception {
 		return !doc.getDocInfo().getAuthor().isBlank() && !doc.getDocInfo().getKeywords().isBlank()
-				&& !doc.getDocInfo().getTitle().isBlank() && !doc.getDocInfo().getKeywords().isBlank()
-				&& !doc.getDocInfo().getSubject().isBlank();
+				&& !doc.getDocInfo().getTitle().isBlank() && !doc.getDocInfo().getSubject().isBlank();
 
 	}
 
