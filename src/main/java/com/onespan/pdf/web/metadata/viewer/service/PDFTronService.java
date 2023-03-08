@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.onespan.pdf.web.metadata.viewer.model.PdfRestrictions;
 import com.pdftron.common.PDFNetException;
+import com.pdftron.pdf.Convert;
 import com.pdftron.pdf.Element;
 import com.pdftron.pdf.ElementReader;
 import com.pdftron.pdf.PDFDoc;
@@ -107,8 +108,23 @@ public class PDFTronService implements AutoCloseable, PDFService {
 		}
 	}
 
+	private PDFTronService(String docx) throws Exception {
+		PDFNet.initialize(System.getenv("PDF_APRYSE_KEY"));
+		try {
+			doc = new PDFDoc();
+			Convert.wordToPdf(doc, docx, null);
+		} catch (PDFNetException exception) {
+			System.err.println(exception.getMessage());
+		}
+	}
+
 	public static PDFTronService initialize(InputStream fileInputStream) throws Exception {
 		return new PDFTronService(fileInputStream);
+
+	}
+
+	public static PDFTronService initializeFromDocx(String docx) throws Exception {
+		return new PDFTronService(docx);
 
 	}
 

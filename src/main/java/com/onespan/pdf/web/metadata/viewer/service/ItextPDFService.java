@@ -4,10 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
+import org.springframework.context.MessageSource;
+
 import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfDocument;
 import com.itextpdf.text.pdf.PdfEncryptor;
 import com.itextpdf.text.pdf.PdfName;
 import com.itextpdf.text.pdf.PdfObject;
@@ -19,16 +21,28 @@ import com.onespan.pdf.web.metadata.viewer.model.PdfRestrictions;
 
 public class ItextPDFService implements AutoCloseable, PDFService {
 
+	private static final String UNSUPPORTED_OPERATION_EXCEPTION_MSG = "unsupported.operation.exception.msg";
 	private PdfReader pdfReader;
 
-	private ItextPDFService(InputStream fileInputStream) throws Exception {
+	private ItextPDFService(InputStream fileInputStream, MessageSource messageSource, Locale locale) throws Exception {
 		pdfReader = new PdfReader(fileInputStream);
 	}
 
-	public static ItextPDFService initialize(InputStream fileInputStream) throws Exception {
+	public static ItextPDFService initialize(InputStream fileInputStream, MessageSource messageSource, Locale locale)
+			throws Exception {
 
-		return new ItextPDFService(fileInputStream);
+		return new ItextPDFService(fileInputStream, messageSource, locale);
 
+	}
+
+	private ItextPDFService(String docx, MessageSource messageSource, Locale locale) throws Exception {
+		throw new UnsupportedOperationException(
+				messageSource.getMessage(UNSUPPORTED_OPERATION_EXCEPTION_MSG, null, locale));
+	}
+
+	public static ItextPDFService initializeFromDocx(String docx, MessageSource messageSource, Locale locale)
+			throws Exception {
+		return new ItextPDFService(docx, messageSource, locale);
 	}
 
 	@Override
