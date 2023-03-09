@@ -3,6 +3,7 @@ package com.onespan.pdf.web.metadata.viewer;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +48,12 @@ public class PDFTronServiceTest {
 				Text field that needs to be edited:Inject signature field:\
 				Signature to be signed:Signature already signed:""";
 		assertEquals(documentRawText, pdfService.getDocumentRawText().toString());
+	}
+
+	@Test
+	public void shouldGetDocumentFontList() throws Exception {
+		String fontList = pdfService.getFontList().stream().collect(Collectors.joining(", ", "(", ")"));
+		assertEquals("(MinionPro-Regular, AdobeArabic-Bold, CourierStd, Symbol)", fontList);
 	}
 
 }
