@@ -1,6 +1,8 @@
 package com.onespan.pdf.web.metadata.viewer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.util.stream.Collectors;
@@ -11,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.onespan.pdf.web.metadata.viewer.model.PdfLibrary;
+import com.onespan.pdf.web.metadata.viewer.model.PdfRestrictions;
 import com.onespan.pdf.web.metadata.viewer.service.PDFService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,6 +26,16 @@ public class PDFTronServiceTest {
 	public void setup() throws Exception {
 		demoPdfInputStream = getClass().getClassLoader().getResourceAsStream("PB-91275 - Demo PDF.pdf");
 		pdfService = PDFService.getByLibrary(PdfLibrary.PDFTRON, demoPdfInputStream, null, null);
+	}
+
+	@Test
+	public void shouldKnowDocumentIsValidPdf() throws Exception {
+		assertTrue(pdfService.isValid());
+	}
+
+	@Test
+	public void shouldKnowSampleDocumentIsNotAdaCompliant() throws Exception {
+		assertFalse(pdfService.isAdaCompliant());
 	}
 
 	@Test
@@ -56,4 +69,11 @@ public class PDFTronServiceTest {
 		assertEquals("(MinionPro-Regular, AdobeArabic-Bold, CourierStd, Symbol)", fontList);
 	}
 
+	@Test
+	public void shouldGetDocumentRestriction() throws Exception {
+		PdfRestrictions documentRestriction = pdfService.getDocumentRestrictionSummary();
+		assertTrue(documentRestriction.isPrintingAllowed());
+		assertTrue(documentRestriction.isCopyAllowed());
+		assertTrue(documentRestriction.isModifyContentsAllowed());
+	}
 }
