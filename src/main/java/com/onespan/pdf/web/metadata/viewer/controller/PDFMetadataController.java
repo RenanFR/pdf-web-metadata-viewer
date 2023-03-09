@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.onespan.pdf.web.metadata.viewer.exception.NotAllowedExtensionException;
 import com.onespan.pdf.web.metadata.viewer.model.PdfLibrary;
 import com.onespan.pdf.web.metadata.viewer.model.PdfRestrictions;
 import com.onespan.pdf.web.metadata.viewer.service.PDFService;
@@ -36,6 +37,7 @@ public class PDFMetadataController {
 	private static final String ALLOWED = "home.pdf.info.allowed";
 	private static final String NO = "home.pdf.info.n";
 	private static final String YES = "home.pdf.info.y";
+	private static final String NOT_ALLOWED_EXTENSION_EXCEPTION_MSG = "not.allowed.extension.exception.msg";
 
 	@Autowired
 	private MessageSource messageSource;
@@ -68,6 +70,9 @@ public class PDFMetadataController {
 				convertFromWordDocumentAndProcess(fileMultipart, libraryName, redirectAttributes, locale);
 			}
 
+		} else {
+			throw new NotAllowedExtensionException(
+					messageSource.getMessage(NOT_ALLOWED_EXTENSION_EXCEPTION_MSG, null, locale), extension);
 		}
 
 		return "redirect:/pdf";
@@ -139,8 +144,8 @@ public class PDFMetadataController {
 				DocumentLanguageDetector.getLanguageFromDocumentText(pdfService.getDocumentRawText()));
 	}
 
-	@ExceptionHandler(UnsupportedOperationException.class)
-	public String handleUnsupportedOperation(UnsupportedOperationException ex, RedirectAttributes redirectAttributes) {
+	@ExceptionHandler(RuntimeException.class)
+	public String handleException(RuntimeException ex, RedirectAttributes redirectAttributes) {
 		redirectAttributes.addFlashAttribute("MSG_ERROR", ex.getMessage());
 		return "redirect:/pdf";
 	}
