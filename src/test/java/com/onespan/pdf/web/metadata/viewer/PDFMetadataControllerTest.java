@@ -17,22 +17,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.onespan.pdf.web.metadata.viewer.controller.PDFMetadataController;
-
 @WebAppConfiguration
 @ContextConfiguration(classes = { PdfWebMetadataViewerApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class PDFMetadataControllerTest {
 
+	private static final String DEMO_PDF = "PB-91275 - Demo PDF.pdf";
+	
 	@Autowired
 	private WebApplicationContext webApplicationContext;
 
 	@Test
-	public void greetingShouldReturnDefaultMessage() throws Exception {
+	public void shouldGoToPdfPageWithDataAfterUpload() throws Exception {
 		final byte[] fileBytes = Files
-				.readAllBytes(Paths.get(getClass().getClassLoader().getResource("PB-91275 - Demo PDF.pdf").toURI()));
-		MockMultipartFile mockMultipartFile = new MockMultipartFile("fileMultipart", "PB-91275 - Demo PDF.pdf",
-				"application/pdf", fileBytes);
+				.readAllBytes(Paths.get(getClass().getClassLoader().getResource(DEMO_PDF).toURI()));
+		MockMultipartFile mockMultipartFile = new MockMultipartFile("fileMultipart", DEMO_PDF, "application/pdf",
+				fileBytes);
 
 		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		mockMvc.perform(multipart("/pdf").file(mockMultipartFile)).andExpect(status().is3xxRedirection());
