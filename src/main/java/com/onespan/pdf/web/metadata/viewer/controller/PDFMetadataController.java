@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -57,8 +58,17 @@ public class PDFMetadataController {
 	public String receiveAndAnalysePdf(@RequestParam MultipartFile fileMultipart, String libraryName,
 			RedirectAttributes redirectAttributes, @RequestParam(required = false) String lang) throws Exception {
 
-		String extension = FilenameUtils.getExtension(fileMultipart.getOriginalFilename());
 		Locale locale = lang != null ? new Locale(lang) : Locale.US;
+
+		process(fileMultipart, libraryName, redirectAttributes, locale,
+				getAction(fileMultipart, redirectAttributes, locale));
+
+		return "redirect:/pdf";
+	}
+
+	private void process(MultipartFile fileMultipart, String libraryName, RedirectAttributes redirectAttributes,
+			Locale locale, Consumer<Map<String, Object>> doWithMetadataAction) throws Exception, IOException {
+		String extension = FilenameUtils.getExtension(fileMultipart.getOriginalFilename());
 
 		LOGGER.info("File extension: {}", extension);
 
@@ -66,34 +76,47 @@ public class PDFMetadataController {
 			if (!needsConversion(extension)) {
 				PDFService pdfService = PDFService.getByLibrary(PdfLibrary.getByName(libraryName),
 						fileMultipart.getInputStream(), messageSource, locale);
-				processPdf(fileMultipart, redirectAttributes, locale, pdfService);
+				processPdf(pdfService, doWithMetadataAction);
 			} else {
-				convertFromWordDocumentAndProcess(fileMultipart, libraryName, redirectAttributes, locale);
+				convertFromWordDocumentAndProcess(fileMultipart, libraryName, doWithMetadataAction);
 			}
 
 		} else {
 			throw new NotAllowedExtensionException(
 					messageSource.getMessage(NOT_ALLOWED_EXTENSION_EXCEPTION_MSG, null, locale), extension);
 		}
-
-		return "redirect:/pdf";
 	}
 
 	private void convertFromWordDocumentAndProcess(MultipartFile fileMultipart, String libraryName,
-			RedirectAttributes redirectAttributes, Locale locale) throws IOException, Exception {
+			Consumer<Map<String, Object>> doWithMetadataAction) throws IOException, Exception {
 		String tmpdir = System.getProperty("java.io.tmpdir");
 		File tmpFile = new File(tmpdir + "/" + fileMultipart.getOriginalFilename());
 		fileMultipart.transferTo(tmpFile);
 		PDFService pdfService = PDFService.convertFromDocxUsingLibrary(PdfLibrary.getByName(libraryName),
 				tmpFile.getAbsolutePath(), messageSource, null);
 		tmpFile.delete();
-		processPdf(fileMultipart, redirectAttributes, locale, pdfService);
+		processPdf(pdfService, doWithMetadataAction);
 	}
 
-	private void processPdf(MultipartFile pdfFile, RedirectAttributes redirectAttributes, Locale locale,
-			PDFService pdfService) throws Exception, IOException {
+	private Consumer<Map<String, Object>> getAction(MultipartFile fileMultipart, RedirectAttributes redirectAttributes,
+			Locale locale) {
+		Consumer<Map<String, Object>> doWithMetadataAction = metadata -> {
+			try {
+				addViewAttributes(fileMultipart, redirectAttributes, metadata, locale);
+			} catch (Exception e) {
+				LOGGER.error(e.getMessage());
+			}
+		};
+		return doWithMetadataAction;
+	}
 
-		addViewAttributes(pdfFile, redirectAttributes, pdfService, locale);
+	private void processPdf(PDFService pdfService, Consumer<Map<String, Object>> doWithMetadataAction)
+			throws Exception, IOException {
+
+		Map<String, Object> metadataFromService = getMetadataFromService(pdfService);
+
+		doWithMetadataAction.accept(metadataFromService);
+
 	}
 
 	private boolean isAllowedExtension(String extension) {
@@ -107,7 +130,7 @@ public class PDFMetadataController {
 	}
 
 	private StringBuilder buildDocumentRestrictionSummaryText(Locale locale, String messageAllowed,
-			String messageNotAllowed, PDFService pdfService, PdfRestrictions documentRestriction) throws Exception {
+			String messageNotAllowed, PdfRestrictions documentRestriction) throws Exception {
 
 		StringBuilder documentRestrictionSummary = new StringBuilder();
 		documentRestrictionSummary.append(messageSource.getMessage(PRINT, null, locale) + ": "
@@ -119,15 +142,13 @@ public class PDFMetadataController {
 		return documentRestrictionSummary;
 	}
 
-	private void addViewAttributes(MultipartFile pdfFile, RedirectAttributes redirectAttributes, PDFService pdfService,
-			Locale locale) throws Exception, IOException {
+	private void addViewAttributes(MultipartFile pdfFile, RedirectAttributes redirectAttributes,
+			Map<String, Object> metadataFromService, Locale locale) throws Exception, IOException {
 
 		String messageYes = messageSource.getMessage(YES, null, locale);
 		String messageNo = messageSource.getMessage(NO, null, locale);
 		String messageAllowed = messageSource.getMessage(ALLOWED, null, locale);
 		String messageNotAllowed = messageSource.getMessage(NOT_ALLOWED, null, locale);
-
-		Map<String, Object> metadataFromService = getMetadataFromService(pdfService);
 
 		redirectAttributes.addFlashAttribute("pdfVersion", metadataFromService.get("pdfVersion"));
 		redirectAttributes.addFlashAttribute("pdfValidity",
@@ -139,7 +160,7 @@ public class PDFMetadataController {
 		redirectAttributes.addFlashAttribute("pdfLanguage", metadataFromService.get("pdfLanguage"));
 
 		StringBuilder documentRestrictionSummary = buildDocumentRestrictionSummaryText(locale, messageAllowed,
-				messageNotAllowed, pdfService, (PdfRestrictions) metadataFromService.get("documentRestriction"));
+				messageNotAllowed, (PdfRestrictions) metadataFromService.get("documentRestriction"));
 
 		redirectAttributes.addFlashAttribute("pdfRestrictions", documentRestrictionSummary.toString());
 
