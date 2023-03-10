@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -92,18 +93,7 @@ public class PDFMetadataController {
 	private void processPdf(MultipartFile pdfFile, RedirectAttributes redirectAttributes, Locale locale,
 			PDFService pdfService) throws Exception, IOException {
 
-		String messageYes = messageSource.getMessage(YES, null, locale);
-		String messageNo = messageSource.getMessage(NO, null, locale);
-		String messageAllowed = messageSource.getMessage(ALLOWED, null, locale);
-		String messageNotAllowed = messageSource.getMessage(NOT_ALLOWED, null, locale);
-
-		StringBuilder documentRestrictionSummary = buildDocumentRestrictionSummaryText(locale, messageAllowed,
-				messageNotAllowed, pdfService);
-
-		String pdfFonts = pdfService.getFontList().stream().collect(Collectors.joining(", ", "(", ")"));
-
-		addViewAttributes(pdfFile, redirectAttributes, messageYes, messageNo, pdfService, documentRestrictionSummary,
-				pdfFonts);
+		addViewAttributes(pdfFile, redirectAttributes, pdfService, locale);
 	}
 
 	private boolean isAllowedExtension(String extension) {
@@ -117,8 +107,8 @@ public class PDFMetadataController {
 	}
 
 	private StringBuilder buildDocumentRestrictionSummaryText(Locale locale, String messageAllowed,
-			String messageNotAllowed, PDFService pdfService) throws Exception {
-		PdfRestrictions documentRestriction = pdfService.getDocumentRestrictionSummary();
+			String messageNotAllowed, PDFService pdfService, PdfRestrictions documentRestriction) throws Exception {
+
 		StringBuilder documentRestrictionSummary = new StringBuilder();
 		documentRestrictionSummary.append(messageSource.getMessage(PRINT, null, locale) + ": "
 				+ (documentRestriction.isPrintingAllowed() ? messageAllowed : messageNotAllowed) + ", ");
@@ -129,19 +119,47 @@ public class PDFMetadataController {
 		return documentRestrictionSummary;
 	}
 
-	private void addViewAttributes(MultipartFile pdfFile, RedirectAttributes redirectAttributes, String messageYes,
-			String messageNo, PDFService pdfService, StringBuilder documentRestrictionSummary, String pdfFonts)
-			throws Exception, IOException {
-		redirectAttributes.addFlashAttribute("MSG_SUCCESS", pdfFile.getOriginalFilename());
-		redirectAttributes.addFlashAttribute("pdfVersion", pdfService.getPDFVersion());
-		redirectAttributes.addFlashAttribute("pdfValidity", pdfService.isValid() ? messageYes : messageNo);
-		redirectAttributes.addFlashAttribute("pdfAda", pdfService.isAdaCompliant() ? messageYes : messageNo);
-		redirectAttributes.addFlashAttribute("pdfFonts", pdfFonts);
+	private void addViewAttributes(MultipartFile pdfFile, RedirectAttributes redirectAttributes, PDFService pdfService,
+			Locale locale) throws Exception, IOException {
+
+		String messageYes = messageSource.getMessage(YES, null, locale);
+		String messageNo = messageSource.getMessage(NO, null, locale);
+		String messageAllowed = messageSource.getMessage(ALLOWED, null, locale);
+		String messageNotAllowed = messageSource.getMessage(NOT_ALLOWED, null, locale);
+
+		Map<String, Object> metadataFromService = getMetadataFromService(pdfService);
+
+		redirectAttributes.addFlashAttribute("pdfVersion", metadataFromService.get("pdfVersion"));
+		redirectAttributes.addFlashAttribute("pdfValidity",
+				(boolean) metadataFromService.get("pdfValidity") ? messageYes : messageNo);
+		redirectAttributes.addFlashAttribute("pdfAda",
+				(boolean) metadataFromService.get("pdfAda") ? messageYes : messageNo);
+		redirectAttributes.addFlashAttribute("pdfFonts", metadataFromService.get("pdfFonts"));
+		redirectAttributes.addFlashAttribute("pdfPages", metadataFromService.get("pdfPages"));
+		redirectAttributes.addFlashAttribute("pdfLanguage", metadataFromService.get("pdfLanguage"));
+
+		StringBuilder documentRestrictionSummary = buildDocumentRestrictionSummaryText(locale, messageAllowed,
+				messageNotAllowed, pdfService, (PdfRestrictions) metadataFromService.get("documentRestriction"));
+
 		redirectAttributes.addFlashAttribute("pdfRestrictions", documentRestrictionSummary.toString());
-		redirectAttributes.addFlashAttribute("pdfPages", pdfService.getPages());
-		redirectAttributes.addFlashAttribute("pdfSize", pdfFile.getSize() + " Bytes");
-		redirectAttributes.addFlashAttribute("pdfLanguage",
-				DocumentLanguageDetector.getLanguageFromDocumentText(pdfService.getDocumentRawText()));
+
+		redirectAttributes.addFlashAttribute("MSG_SUCCESS", pdfFile.getOriginalFilename());
+		redirectAttributes.addFlashAttribute("pdfSize", getPDFSize(pdfFile));
+	}
+
+	private String getPDFSize(MultipartFile pdfFile) {
+		return pdfFile.getSize() + " Bytes";
+	}
+
+	private Map<String, Object> getMetadataFromService(PDFService pdfService) throws Exception, IOException {
+
+		String pdfFonts = pdfService.getFontList().stream().collect(Collectors.joining(", ", "(", ")"));
+		PdfRestrictions documentRestriction = pdfService.getDocumentRestrictionSummary();
+
+		return Map.of("pdfVersion", pdfService.getPDFVersion(), "pdfValidity", pdfService.isValid(), "pdfAda",
+				pdfService.isAdaCompliant(), "pdfFonts", pdfFonts, "pdfPages", String.valueOf(pdfService.getPages()),
+				"pdfLanguage", DocumentLanguageDetector.getLanguageFromDocumentText(pdfService.getDocumentRawText()),
+				"documentRestriction", documentRestriction);
 	}
 
 	@ExceptionHandler(RuntimeException.class)
