@@ -14,6 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -23,7 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class PDFMetadataControllerTest {
 
 	private static final String DEMO_PDF = "PB-91275 - Demo PDF.pdf";
-	
+
 	@Autowired
 	private WebApplicationContext webApplicationContext;
 
@@ -35,7 +36,17 @@ public class PDFMetadataControllerTest {
 				fileBytes);
 
 		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		mockMvc.perform(multipart("/pdf").file(mockMultipartFile)).andExpect(status().is3xxRedirection());
+		mockMvc.perform(multipart("/pdf").file(mockMultipartFile)).andExpect(status().is3xxRedirection())
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfVersion", "1.7"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfValidity", "Sim"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfAda", "Nao"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfFonts",
+						"(MinionPro-Regular, AdobeArabic-Bold, CourierStd, Symbol)"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfRestrictions",
+						"Impressao: Permitido, Copia: Permitido, Modificacao: Permitido"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfPages", "1"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfSize", "36292 Bytes"))
+				.andExpect(MockMvcResultMatchers.flash().attribute("pdfLanguage", "en"));
 	}
 
 }
