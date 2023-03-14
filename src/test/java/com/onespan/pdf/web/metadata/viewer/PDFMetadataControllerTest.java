@@ -3,6 +3,8 @@ package com.onespan.pdf.web.metadata.viewer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -30,10 +32,7 @@ public class PDFMetadataControllerTest {
 
 	@Test
 	public void shouldGoToPdfPageWithDataAfterUpload() throws Exception {
-		final byte[] fileBytes = Files
-				.readAllBytes(Paths.get(getClass().getClassLoader().getResource(DEMO_PDF).toURI()));
-		MockMultipartFile mockMultipartFile = new MockMultipartFile("fileMultipart", DEMO_PDF, "application/pdf",
-				fileBytes);
+		MockMultipartFile mockMultipartFile = getSampleFile();
 
 		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		mockMvc.perform(multipart("/pdf").file(mockMultipartFile)).andExpect(status().is3xxRedirection())
@@ -47,6 +46,14 @@ public class PDFMetadataControllerTest {
 				.andExpect(MockMvcResultMatchers.flash().attribute("pdfPages", "1"))
 				.andExpect(MockMvcResultMatchers.flash().attribute("pdfSize", "36292 Bytes"))
 				.andExpect(MockMvcResultMatchers.flash().attribute("pdfLanguage", "en"));
+	}
+
+	public static MockMultipartFile getSampleFile() throws IOException, URISyntaxException {
+		final byte[] fileBytes = Files
+				.readAllBytes(Paths.get(PDFMetadataControllerTest.class.getClassLoader().getResource(DEMO_PDF).toURI()));
+		MockMultipartFile mockMultipartFile = new MockMultipartFile("fileMultipart", DEMO_PDF, "application/pdf",
+				fileBytes);
+		return mockMultipartFile;
 	}
 
 }
