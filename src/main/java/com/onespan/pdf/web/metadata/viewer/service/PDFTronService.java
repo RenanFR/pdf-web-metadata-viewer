@@ -33,7 +33,11 @@ public class PDFTronService implements AutoCloseable, PDFService {
 
 	public String getPDFVersion() throws Exception {
 		String pdfHeader = getPDFHeader();
-		return pdfHeader.split("-")[1];
+		if (!pdfHeader.isBlank()) {
+			
+			return pdfHeader.split("-")[1];
+		}
+		return "";
 	}
 
 	private String getPDFHeader() throws PDFNetException {
